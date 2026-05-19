@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { registryApi, MiniApp } from '../lib/api';
+import VersionsModal from '../components/VersionsModal';
 
 const CATEGORY_COLORS: Record<string, string> = {
   food: 'bg-orange-100 text-orange-700',
@@ -10,6 +11,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   health: 'bg-pink-100 text-pink-700',
   transport: 'bg-teal-100 text-teal-700',
 };
+
+const [versionsApp, setVersionsApp] = useState<MiniApp | null>(null);
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -244,6 +247,17 @@ export default function DashboardPage() {
                     {app.permissions.length > 0 ? app.permissions.join(', ') : 'sin permisos'}
                   </div>
                   <button
+                    onClick={() => setVersionsApp(app)}
+                    style={{
+                      fontSize: 12, color: '#6C63FF',
+                      background: '#f0eeff', border: 'none',
+                      borderRadius: 8, padding: '4px 10px',
+                      cursor: 'pointer', whiteSpace: 'nowrap',
+                    }}
+                  >
+                    📦 Versiones
+                  </button>
+                  <button
                     onClick={() => handleToggle(app.id)}
                     className={`relative w-11 h-6 rounded-full transition-colors ${app.enabled ? 'bg-indigo-600' : 'bg-gray-200'}`}
                   >
@@ -255,6 +269,14 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+      {versionsApp && (
+        <VersionsModal
+          appId={versionsApp.id}
+          appName={versionsApp.name}
+          onClose={() => setVersionsApp(null)}
+          onRollback={loadApps}
+        />
+      )}
     </main>
   );
 }

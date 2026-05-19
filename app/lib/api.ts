@@ -49,3 +49,10 @@ export const registryApi = {
   toggle: (id: string) => api.put(`/registry/${id}/toggle`),
   create: (app: Partial<MiniApp>) => api.post('/registry', app),
 };
+
+export const versionsApi = {
+  getVersions: (appId: string) =>
+    api.get<{ versions: any[] }>(`/registry/${appId}/versions`),
+  rollback: (appId: string, versionId: number) =>
+    api.post(`/registry/${appId}/rollback/${versionId}`),
+};
