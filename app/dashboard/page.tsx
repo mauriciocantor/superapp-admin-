@@ -12,9 +12,10 @@ const CATEGORY_COLORS: Record<string, string> = {
   transport: 'bg-teal-100 text-teal-700',
 };
 
-const [versionsApp, setVersionsApp] = useState<MiniApp | null>(null);
+
 
 export default function DashboardPage() {
+  const [versionsApp, setVersionsApp] = useState<MiniApp | null>(null);
   const router = useRouter();
   const [apps, setApps] = useState<MiniApp[]>([]);
   const [loading, setLoading] = useState(true);
