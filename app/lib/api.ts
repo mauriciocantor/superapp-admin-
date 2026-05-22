@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://superapp-backend-grtx.onrender.com';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -45,7 +45,7 @@ export const authApi = {
 };
 
 export const registryApi = {
-  getApps: () => api.get<{ apps: MiniApp[]; total: number }>('/registry'),
+  getApps: () => api.get<{ apps: MiniApp[]; total: number }>('/registry/admin/all'),
   toggle: (id: string) => api.put(`/registry/${id}/toggle`),
   create: (app: Partial<MiniApp>) => api.post('/registry', app),
 };
@@ -55,4 +55,30 @@ export const versionsApi = {
     api.get<{ versions: any[] }>(`/registry/${appId}/versions`),
   rollback: (appId: string, versionId: number) =>
     api.post(`/registry/${appId}/rollback/${versionId}`),
+};
+
+export interface Environment {
+  id: number;
+  app_id: string;
+  environment: 'development' | 'sandbox' | 'production';
+  bundle_url: string;
+  version: string;
+  status: 'inactive' | 'building' | 'ready' | 'failed';
+  deployed_at: string | null;
+  deployed_by: string | null;
+  commit_sha: string | null;
+  qr_token: string | null;
+}
+
+export const environmentsApi = {
+  getEnvironments: (appId: string) =>
+    api.get<{ environments: Environment[] }>(`/environments/${appId}`),
+  deploy: (appId: string, environment: string) =>
+    api.post(`/environments/${appId}/deploy`, { environment }),
+  promote: (appId: string, from: string, to: string) =>
+    api.post(`/environments/${appId}/promote`, { from, to }),
+  generateQR: (appId: string, environment: string) =>
+    api.post(`/environments/${appId}/qr`, { environment }),
+  updateBundle: (appId: string, environment: string, data: any) =>
+    api.put(`/environments/${appId}/${environment}`, data),
 };

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { registryApi, MiniApp } from '../lib/api';
 import VersionsModal from '../components/VersionsModal';
+import EnvironmentsPanel from '../components/EnvironmentsPanel';
 
 const CATEGORY_COLORS: Record<string, string> = {
   food: 'bg-orange-100 text-orange-700',
@@ -26,6 +27,7 @@ export default function DashboardPage() {
     category: 'other', permissions: '',
     color: '6C63FF', version: '1.0.0',
   });
+  const [environmentsApp, setEnvironmentsApp] = useState<MiniApp | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -47,10 +49,19 @@ export default function DashboardPage() {
   }
 
   async function handleToggle(id: string) {
-    await registryApi.toggle(id);
-    setApps(prev =>
-      prev.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a)
-    );
+    try {
+      const res = await registryApi.toggle(id);
+      setApps(prev =>
+        prev.map(a => a.id === id ? { ...a, enabled: res.data.enabled } : a)
+      );
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        localStorage.clear();
+        router.push('/');
+      } else {
+        alert('Error al cambiar estado: ' + (err.response?.data?.error || err.message));
+      }
+    }
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -248,6 +259,18 @@ export default function DashboardPage() {
                     {app.permissions.length > 0 ? app.permissions.join(', ') : 'sin permisos'}
                   </div>
                   <button
+                    onClick={() => setEnvironmentsApp(app)}
+                    style={{
+                      fontSize: 12, color: '#2E7D32',
+                      background: '#E8F5E9', border: 'none',
+                      borderRadius: 8, padding: '4px 10px',
+                      cursor: 'pointer', whiteSpace: 'nowrap',
+                      marginRight: 4,
+                    }}
+                  >
+                    🌍 Ambientes
+                  </button>
+                  <button
                     onClick={() => setVersionsApp(app)}
                     style={{
                       fontSize: 12, color: '#6C63FF',
@@ -276,6 +299,13 @@ export default function DashboardPage() {
           appName={versionsApp.name}
           onClose={() => setVersionsApp(null)}
           onRollback={loadApps}
+        />
+      )}
+      {environmentsApp && (
+        <EnvironmentsPanel
+          appId={environmentsApp.id}
+          appName={environmentsApp.name}
+          onClose={() => setEnvironmentsApp(null)}
         />
       )}
     </main>
